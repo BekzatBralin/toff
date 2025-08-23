@@ -380,6 +380,22 @@ async function finishRoulette(ctx) {
     await ctx.send("😕 Никто не угадал выигрышное число.");
   }
 }
+function keepAlive() {
+    console.log("Отправка Keep-Alive сообщения для предотвращения отключения.");
+    
+    const ownerId = 609824089; 
+
+    vk.api.messages.send({
+        user_id: ownerId,
+        message: `@id${ownerId}(b.bralin), бот активен.`,
+        random_id: Date.now(),
+    }).catch(err => {
+        console.error("Не удалось отправить Keep-Alive сообщение:", err);
+    });
+}
+
+const keepAliveInterval = 14 * 60 * 1000;
+setInterval(keepAlive, keepAliveInterval);
 
 vk.updates.start().then(() => {
     if (myId) {
