@@ -387,14 +387,14 @@ function keepAlive() {
 
     vk.api.messages.send({
         user_id: ownerId,
-        message: `@id${ownerId}(b.bralin), бот активен.`,
+        message: `бот активен.`,
         random_id: Date.now(),
     }).catch(err => {
         console.error("Не удалось отправить Keep-Alive сообщение:", err);
     });
 }
 
-const keepAliveInterval = 14 * 60 * 1000;
+const keepAliveInterval = 10 * 60 * 1000;
 setInterval(keepAlive, keepAliveInterval);
 
 vk.updates.start().then(() => {
