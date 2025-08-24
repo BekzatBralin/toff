@@ -96,12 +96,16 @@ vk.updates.on("message_new", async (ctx) => {
 
   if (!text) return;
 
-  if (botData.admins.includes(senderId)) {
-    if (lowerText.startsWith("!админка")) {
-      const args = text.split(" ");
-      if (args.length < 2) return ctx.send("⚠️ Формат: !админка <id_пользователя>");
-      const targetId = parseInt(args[1]);
-      if (isNaN(targetId)) return ctx.send("❌ Неверный ID пользователя.");
+if (botData.admins.includes(senderId)) {
+  if (lowerText.startsWith("!админка")) {
+    const replyMessage = ctx.message.reply_message;
+    const args = text.split(" ");
+    
+    // 1. Проверяем, есть ли ответ на сообщение
+    if (replyMessage) {
+      const targetId = replyMessage.from_id;
+      if (!targetId) return ctx.send("❌ Не удалось получить ID пользователя из ответа.");
+      
       const is_admin = botData.admins.includes(targetId);
       if (is_admin) {
         botData.admins = botData.admins.filter(id => id !== targetId);
@@ -113,6 +117,62 @@ vk.updates.on("message_new", async (ctx) => {
         return ctx.send(`✅ [id${targetId}|Пользователь] успешно назначен администратором.`);
       }
     }
+
+if (args.length < 2) return ctx.send("⚠️ Формат: !админка @<короткое-имя-аккаунта> или ответом на сообщение.");
+
+// Новое регулярное выражение для обоих типов упоминаний
+const mentionMatch = args[1].match(/\[(club|id)(\d+)\|.+\]/);
+const usernameMatch = args[1].match(/^@?(\w+\.?\w+)/);
+
+if (mentionMatch) {
+  // Обработка упоминания по ID
+  const targetId = parseInt(mentionMatch[2]);
+  if (isNaN(targetId)) return ctx.send("❌ Неверный формат ID в упоминании.");
+  
+  // ... (дальше ваш код для назначения/снятия с должности)
+  const is_admin = botData.admins.includes(targetId);
+  if (is_admin) {
+    botData.admins = botData.admins.filter(id => id !== targetId);
+    saveData();
+    return ctx.send(`✅ [id${targetId}|Пользователь] успешно снят с должности администратора.`);
+  } else {
+    botData.admins.push(targetId);
+    saveData();
+    return ctx.send(`✅ [id${targetId}|Пользователь] успешно назначен администратором.`);
+  }
+
+} else if (usernameMatch) {
+  // Обработка короткого имени
+  const username = usernameMatch[1];
+  
+  try {
+    const userInfo = await api.users.get({ user_ids: username });
+    if (userInfo.length === 0) {
+      return ctx.send("❌ Пользователь с таким коротким именем не найден.");
+    }
+    const targetId = userInfo[0].id;
+    
+    // ... (дальше ваш код для назначения/снятия с должности)
+    const is_admin = botData.admins.includes(targetId);
+    if (is_admin) {
+      botData.admins = botData.admins.filter(id => id !== targetId);
+      saveData();
+      return ctx.send(`✅ [id${targetId}|Пользователь] успешно снят с должности администратора.`);
+    } else {
+      botData.admins.push(targetId);
+      saveData();
+      return ctx.send(`✅ [id${targetId}|Пользователь] успешно назначен администратором.`);
+    }
+
+  } catch (error) {
+    return ctx.send("❌ Произошла ошибка при поиске пользователя. Возможно, неверное короткое имя.");
+  }
+} else {
+  // Если ни один вариант не сработал
+  return ctx.send("⚠️ Неверный формат. Пожалуйста, используйте короткое имя или ответ на сообщение.");
+}
+  }
+
 
     if (lowerText === "!скрыть") {
         await ctx.send({
