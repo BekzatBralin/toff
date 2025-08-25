@@ -68,7 +68,7 @@ function shuffleWord(word) {
 
 async function getRandomWord() {
   try {
-    const prompt = "Придумай одно русское слово длиной от 5 до 10 букв для игры в анаграммы. Слово должно быть существительным в именительном падеже, единственном числе. В ответе только одно слово, без знаков препинания, дополнительных слов или объяснений.";
+    const prompt = "Придумай случайное русское существительное длиной от 5 до 15 букв. В ответе только одно слово, без пояснений и другого текста. Каждый раз выбирай новое слово.";
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = await response.text();
